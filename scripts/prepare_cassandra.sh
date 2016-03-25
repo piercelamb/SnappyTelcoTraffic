@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cqlsh <<-EOF
+/Users/plamb/Documents/SnappyData/Coding/Frameworks/datastax-ddc-3.2.1/bin/cqlsh <<-EOF
 
 CREATE KEYSPACE IF NOT EXISTS traffic_keyspace WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1 };
 USE traffic_keyspace ;
