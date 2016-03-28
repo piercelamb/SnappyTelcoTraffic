@@ -10,30 +10,37 @@ import play.api.libs.json.Json
 import traffic.model._
 import traffic.process.{Geofencer, ClusterAnalyser, MetricStatsProducer}
 import traffic.util.AppConfig._
+import org.apache.log4j.Logger
+import org.apache.log4j.Level
 
 object TrafficStreamProcessor {
 
+
     def main(args: Array[String]): Unit = {
+
+        Logger.getLogger("org").setLevel(Level.OFF)
+        Logger.getLogger("akka").setLevel(Level.OFF)
 
         val sparkConf = new SparkConf()
             .setMaster("local[*]")
             .setAppName("TrafficStreamProcessor")
-            .set("spark.logConf", "true")
-            .set("spark.akka.logLifecycleEvents", "true")
             //.set("spark.cassandra.connection.host", cassandraHost)
 
         val sc = new SparkContext(sparkConf)
-        val snsc = SnappyStreamingContext(SnappyContext.getOrCreate(sc), Milliseconds(1000))
+        //val snsc = SnappyStreamingContext(SnappyContext.getOrCreate(sc), Milliseconds(1000))
+        val snc = SnappyContext(sc)
        // val ssc = new StreamingContext(sparkConf, batchSize)
         // ssc.checkpoint(checkpoint)
 
-        process(snsc)
+        process(snc)
 
-        snsc.start
-        snsc.awaitTermination
+sc.stop()
+
+//        snsc.start
+//        snsc.awaitTermination
     }
 
-    def process(snsc: SnappyStreamingContext): Unit = {
+    def process(snsc: SnappyContext): Unit = {
 
         /* capture the attach stream and transform into attach events */
 //        val attachStream = KafkaUtils
@@ -48,11 +55,12 @@ object TrafficStreamProcessor {
             "create table attachEvent(bearerid string, subscriberid long, subscriberimsi string, " +
               "subscribermsisdn string, subscriberimei string, lastname string, firstname string, address string, " +
               "city string, zip string, country string) " +
-              "using directkafka_stream options" +
-              "(storagelevel 'MEMORY_AND_DISK_SER_2', " +
-              "rowConverter 'traffic.util.KafkaStreamToRowsConverter', " +
-              "kafkaParams 'metadata.broker.list->localhost:9092', " +
-              " topics 'attach-topic')"
+                "using column"
+//              "using directkafka_stream options" +
+//              "(storagelevel 'MEMORY_AND_DISK_SER_2', " +
+//              "rowConverter 'traffic.util.KafkaStreamToRowsConverter', " +
+//              "kafkaParams 'metadata.broker.list->localhost:9092', " +
+//              " topics 'attach-topic')"
         )
 
 
